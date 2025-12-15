@@ -1,0 +1,64 @@
+# cpi.def
+BootStrap: docker
+From: harbor.michaelapp.com/library/ubuntu:22.04
+
+%labels
+    Author  yskj
+    Version cpi_v0.2
+
+%environment
+    export OMPI_DIR=/opt/ompi
+    export PATH=$OMPI_DIR/bin:/opt/app:$PATH
+    export LD_LIBRARY_PATH=$OMPI_DIR/lib:$LD_LIBRARY_PATH
+    export OMPI_ALLOW_RUN_AS_ROOT=1
+    export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+%runscript
+SINGULARITYBIN=singularity
+ORTED_BIN=$(which orted)
+
+if [ "x$SINGULARITY_BIND" != "x" ];then
+        SINGULARITY_BIND_OPT=" --bind $SINGULARITY_BIND"
+else
+        SINGULARITY_BIND_OPT=""
+fi
+
+export OMPI_MCA_orte_launch_agent="$(cat <<EOF
+$SINGULARITYBIN exec $SINGULARITY_BIND_OPT $SINGULARITY_CONTAINER $ORTED_BIN
+EOF
+)"
+
+exec $@
+
+%files
+    ./app/cpi.c     /opt/app/
+    ./app/cpi.cxx   /opt/app/
+
+%post
+    export LC_ALL="C.UTF-8"
+    export DEBIAN_FRONTEND=noninteractive
+    export OMPI_DIR=/opt/ompi
+    export PATH=$OMPI_DIR/bin:/opt/app:$PATH
+    export LD_LIBRARY_PATH=$OMPI_DIR/lib:$LD_LIBRARY_PATH
+    export OMPI_ALLOW_RUN_AS_ROOT=1
+    export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+    # update images source
+    sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    # installing required packages
+    apt update && apt-get install -y wget git bash gcc gfortran g++ make file
+
+    # Installing Open MPI
+    mkdir -p /opt/ompi
+    mkdir -p /tmp/ompi
+    cd /tmp/ompi 
+    wget https://cae-static-1252829527.cos.ap-shanghai.myqcloud.com/devops/dev/openmpi-4.1.4.tar.gz
+    tar zxvf openmpi-4.1.4.tar.gz
+    cd openmpi-4.1.4/
+    ./configure --enable-mpi-cxx --enable-orterun-prefix-by-default --prefix=$OMPI_DIR && make -j8 && make install
+    cd /opt/app/ && mpicc -o cpi cpi.c
+    cd /opt/app/ && mpicxx -o cpix cpi.cxx
+    rm -rf /tmp/ompi 
+%help
+    cpi: singularity run cpi_v0.2.sif /opt/app/cpi 

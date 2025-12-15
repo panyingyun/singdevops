@@ -1,0 +1,211 @@
+Singularity 最佳实践
+软件即是艺术
+
+Michael.Pan 
+2025年12月15日
+
+* Singularity 
+
+- Singularity - 简介
+
+- Singularity - 命令行安装
+
+- Singularity - 常见命令使用
+
+- Singularity - 打包 Python 命令行
+
+- Singularity - 打包 Octave 程序
+
+- Singularity - 打包 PI 并行计算程序
+
+* Singularity简介
+
+.image singularity.jpg _ 1000
+
+* Singularity安装 - 1.1 两种安装方法
+
+- 通过RPM or DEB 安装
+
+.link https://github.com/sylabs/singularity/releases  SingularityCE 3.10.2
+
+
+* Singularity安装 - 1.2 配置修改
+
+    sudo sed -i 's/shared loop devices = no/shared loop devices = yes/g' \
+    /usr/local/etc/singularity/singularity.conf
+
+* Singularity命令 - 2.1 拉取预编译镜像
+
+    1）拉取ubuntu镜像
+    $ singularity pull docker://ubuntu:22.04
+
+    2）拉取centos镜像
+    $ singularity pull docker://centos:8
+
+* Singularity命令 - 2.2 运行镜像
+
+    交互式运行
+    $ singularity run ubuntu_22.04.sif
+
+    执行命令并退出
+    $ singularity run ubuntu_22.04.sif pwd
+    $ singularity run ubuntu_22.04.sif ls /bin  
+
+* Singularity命令 - 2.3 挂载外部目录
+
+    $ singularity run -B /opt:/opt ubuntu_22.04.sif
+    
+    体会一下不同
+    $ singularity run ubuntu_22.04.sif ls /opt
+    $ singularity run -B /opt:/opt ubuntu_22.04.sif ls /opt
+    
+* Singularity打包命令行应用 - 3.1 目录
+
+    ├── README.md
+    ├── app
+    │   ├── hello.py
+    │   └── requirements.txt
+    ├── hello.def
+    └── hello.sh
+
+* Singularity打包命令行应用 - 3.2 hello.py 
+
+.code -numbers ../tutorials/tutorial01/app/hello.py
+
+* Singularity打包命令行应用 - 3.3 def文件
+
+.code -numbers ../tutorials/tutorial01/hello.def  /hello.def/,/%post/
+
+* Singularity打包命令行应用 - 3.3 def文件
+
+.code -numbers ../tutorials/tutorial01/hello.def  /%post/,/singularity run/
+
+* Singularity打包命令行应用 - 3.4 打包
+    $ cd ../tutorials/tutorial01/
+    $ sudo singularity build hello_v0.1.sif hello.def
+
+* Singularity打包命令行应用 - 3.5 运行
+
+    $ singularity run hello_v0.1.sif 10 20
+    30
+    $ singularity run hello_v0.1.sif 66 100
+    166
+
+* Singularity打包Octave（类似Matlab程序）计算程序 - 4.1 目录  
+
+    .
+    ├── README.md
+    ├── app
+    │   ├── gdyadd.m
+    │   └── main.m
+    ├── run.sh
+    ├── sumq.def
+    └── sumq.sh
+
+* Singularity打包Octave（类似Matlab程序）文件 - 4.2 main.m
+
+.code -numbers ../tutorials/octavesingularity/app/main.m  
+
+* Singularity打包Octave（类似Matlab程序）文件 - 4.2 gdyadd.m
+
+.code -numbers ../tutorials/octavesingularity/app/gdyadd.m 
+
+* Singularity打包Octave（类似Matlab程序）运行 - 4.3 打包
+
+    sudo singularity build sumq_v0.1.sif sumq.def
+
+* Singularity打包Octave（类似Matlab程序）运行 - 4.4 运行
+    yypan@deepmind:tutorials/octave01$ singularity run sumq_v0.1.sif
+    result = 74
+
+* Singularity打包pi并行计算 - 5.1 目录
+    .
+    ├── app
+    │   └── cpi.c
+    ├── cpi.def
+    ├── cpi.sh
+    ├── cpi_v0.1.sif
+    ├── README.md
+    └── run.sh
+* Singularity打包pi并行计算 - 5.2 算法
+.image pi01.jpg _ 500
+.image pi02.jpg _ 500
+
+* Singularity打包pi并行计算 - 5.2 cpi.c 
+.code -numbers ../tutorials/tutorial03/app/cpi.c  /#include/,/MPI_Init/
+
+* Singularity打包pi并行计算 - 5.2 cpi.c 
+.code -numbers ../tutorials/tutorial03/app/cpi.c  /MPI_Init/,/MPI_Reduce/
+
+* Singularity打包pi并行计算 - 5.2 cpi.c
+.code -numbers ../tutorials/tutorial03/app/cpi.c  /MPI_Reduce/,/return 0/
+
+* Singularity打包pi并行计算 - 5.3 def文件
+
+.code -numbers ../tutorials/tutorial03/cpi.def  /# cpi.def/,/%files/
+
+* Singularity打包pi并行计算 - 5.3 def文件
+
+.code -numbers ../tutorials/tutorial03/cpi.def  /%files/,/mkdir -p/
+
+* Singularity打包pi并行计算 - 5.3 def文件
+
+.code -numbers ../tutorials/tutorial03/cpi.def  /mkdir -p/,/singularity run/
+
+* Singularity打包pi并行计算 - 5.4 打包
+    $ cd ../tutorials/tutorial03/
+    $ sudo singularity build cpi_v0.1.sif cpi.def
+
+* Singularity打包pi并行计算 - 5.5 运行
+    $ singularity run cpi_v0.1.sif /opt/app/cpi
+    Process 0 of 1 is on cn01
+    pi is approximately 3.1415926535898389, Error is 0.0000000000000457
+    wall clock time = 7.680963
+
+    $ singularity run cpi_v0.1.sif mpirun -n 8 /opt/app/cpi
+    Process 4 of 8 is on cn01
+    ...
+    Process 2 of 8 is on cn01
+    pi is approximately 3.1415926535897949, Error is 0.0000000000000018
+    wall clock time = 0.968542
+
+*   Singularity打包pi并行计算 - 5.5 运行
+    $ singularity run cpi_v0.1.sif mpirun -n 16 /opt/app/cpi
+    Process 4 of 8 is on cn01
+    ...
+    Process 13 of 16 is on cn01
+    pi is approximately 3.1415926535896892, Error is 0.0000000000001039
+    wall clock time = 0.486354
+
+    $ singularity run cpi_v0.1.sif mpirun -n 32 /opt/app/cpi
+    Process 4 of 8 is on cn01
+    ...
+    Process 27 of 32 is on cn01
+    pi is approximately 3.1415926535898584, Error is 0.0000000000000653
+    wall clock time = 0.261127
+
+*   Singularity打包pi并行计算 - 5.6 多节点运行
+
+    mpirun  --mca btl_tcp_if_include 192.168.0.0/24 \
+    --host master:48,cn01:16 singularity run cpi_v0.2.sif cpi
+
+    singularity run cpi_v0.2.sif mpirun --mca btl_tcp_if_include 192.168.0.0/24 \
+    --host master:48,cn01:32 cpi
+
+    Process 34 of 80 is on master
+    Process 44 of 80 is on master
+    ...
+    Process 31 of 80 is on master
+    pi is approximately 3.1415926535897984, Error is 0.0000000000000053
+    wall clock time = 0.213129
+
+
+    备注：ip route show 查看通信路由
+
+* Singularity打包octave csv文件作为输入输出的算法
+
+- https://github.com/panyingyun/octavesingularity
+
+* Singularity打包fortran  csv文件作为输入输出的算法
+
+- https://github.com/panyingyun/fortransingularity

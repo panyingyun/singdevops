@@ -1,0 +1,6 @@
+BootStrap: localimage
+From: hello_v0.1.sif
+
+%files
+	./app/hello.py            /opt/app/
+

@@ -1,0 +1,59 @@
+# vtk.def
+BootStrap: docker
+From: harbor.michaelapp.com/library/ubuntu:20.04
+
+%labels
+    Author  yskj
+    Version vtk_v0.1
+
+%environment
+
+%runscript
+    exec python3 /opt/app/main.py "${@}"
+
+%files
+	./app/main.py             /opt/app/
+	./app/requirements.txt    /opt/app/
+
+%post
+    export LC_ALL="C.UTF-8"
+    export DEBIAN_FRONTEND=noninteractive
+
+    # update images source
+    sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    apt update
+
+    # install base dependence
+    apt install -y xterm gedit
+    apt install -y gcc g++ gfortran python3  make cmake openmpi-bin libopenmpi-dev tzdata python3-pyqt5 pyqt5-dev pyqt5-dev-tools zlib1g-dev python3-dev
+    apt install -y --fix-missing mate-desktop
+    apt install -y --fix-missing mesa-utils libglu1-mesa
+    apt install -y --fix-missing net-tools
+    apt install -y --fix-missing liblapack-dev
+    apt install -y --fix-missing libxft2 libxss-dev libsm-dev libxt-dev libxmu-dev libxi-dev
+    apt install -y --fix-missing libreadline-dev
+    apt install -y --fix-missing grace
+    apt install -y --fix-missing xfonts-scalable xfonts-75dpi
+    # 启动cfd失败添加依赖
+    apt install -y libnlopt0
+    apt install -y libopengl0
+    apt install -y libtbb2
+    apt install -y openssh-server openssh-client
+    # 安装openGL相关
+    apt install -y build-essential libgl1-mesa-dev
+    apt install -y libglew-dev libsdl2-dev libsdl2-image-dev libglm-dev libfreetype6-dev
+    apt install -y libglfw3-dev libglfw3
+    apt install -y libgl1-mesa-dev
+    apt install -y libglu1-mesa-dev
+    apt install -y freeglut3-dev
+
+    # install requirements.txt
+    cd /opt/app
+    
+    apt install python3-pip -y
+    pip install setuptools --upgrade -i  https://mirrors.aliyun.com/pypi/simple/
+    pip install -r requirements.txt -i  https://mirrors.aliyun.com/pypi/simple/
+
+%help
+    vtk: singularity run vtk_v0.1.sif
