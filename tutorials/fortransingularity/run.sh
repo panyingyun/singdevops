@@ -1,1 +1,0 @@
-singularity run fadd_v1.0.sif 2 3

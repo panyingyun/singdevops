@@ -3,7 +3,7 @@ BootStrap: docker
 From: harbor.michaelapp.com/ubuntu/ubuntu:22.04
 
 %labels
-    Author  yskj
+    Author  panyingyun
     Version fadd_v1.0
 
 %environment

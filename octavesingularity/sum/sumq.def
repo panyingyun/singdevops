@@ -1,9 +1,9 @@
 # sumq.def
 BootStrap: docker
-From: harbor.michaelapp.com/gnuoctave/ysoctave:7.2.0
+From: harbor.michaelapp.com/library/octave:7.2.0
 
 %labels
-    Author  gdy
+    Author  panyingyun
     Version sumqv0.1
 
 %runscript

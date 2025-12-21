@@ -1,1 +1,0 @@
-singularity run cppdemo.sif 9 16
