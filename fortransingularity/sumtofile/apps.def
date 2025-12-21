@@ -1,6 +1,6 @@
 # apps.def
 BootStrap: docker
-From: harbor.yuansuan.cn/ubuntu/ubuntu:22.04
+From: harbor.michaelapp.com/ubuntu/ubuntu:22.04
 
 %labels
     Author  gdy

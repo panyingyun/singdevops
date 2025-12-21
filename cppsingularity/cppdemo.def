@@ -1,7 +1,7 @@
 # cppdemo.def
 
 BootStrap: docker
-From: harbor.yuansuan.cn/ubuntu/ubuntu:20.04
+From: harbor.michaelapp.com/ubuntu/ubuntu:20.04
 
 %labels
     Author panyingyun
