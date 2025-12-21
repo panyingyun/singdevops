@@ -1,0 +1,32 @@
+# fadd.def
+BootStrap: docker
+From: harbor.yuansuan.cn/ubuntu/ubuntu:22.04
+
+%labels
+    Author  yskj
+    Version fadd_v1.0
+
+%environment
+	export PATH=/opt/app:$PATH
+	
+%runscript
+	exec /opt/app/fadd $@
+
+%files
+    ./app/fadd.f90     /opt/app/
+
+%post
+    export LC_ALL="C.UTF-8"
+    export DEBIAN_FRONTEND=noninteractive
+    export PATH=/opt/app:$PATH
+
+    # update images source
+    sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    # installing required packages
+    apt update && apt-get install -y wget git bash gcc gfortran g++ make file
+
+	cd /opt/app/ && gfortran -o fadd fadd.f90
+
+%help
+    cpi: singularity run fadd_v1.0.sif 3 5

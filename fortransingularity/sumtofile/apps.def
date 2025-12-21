@@ -1,0 +1,52 @@
+# apps.def
+BootStrap: docker
+From: harbor.yuansuan.cn/ubuntu/ubuntu:22.04
+
+%labels
+    Author  gdy
+    Version apps_v1.0
+
+%environment
+	export PATH=/opt/appsum:/opt/appsquare:$PATH
+
+%files
+    ./appsum/fadd.f90     	 /opt/appsum/
+	./appsquare/fadd.f90     /opt/appsquare/
+	./appdata/matrix.csv     /opt/appdata/
+
+%post
+    export LC_ALL="C.UTF-8"
+    export DEBIAN_FRONTEND=noninteractive
+    export PATH=/opt/appsum:/opt/appsquare:$PATH
+
+    # update images source
+    sed -i 's/archive.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.huaweicloud.com/g' /etc/apt/sources.list
+    # installing required packages
+    apt update && apt-get install -y wget git bash gcc gfortran g++ make file
+
+	cd /opt/appsum/ && gfortran -o sum fadd.f90
+    cd /opt/appsquare/ && gfortran -o square fadd.f90
+
+
+##############################
+# sum
+##############################
+
+%apprun sum
+    cd  /opt/appsum/
+    exec ./sum "${@}"
+
+%apphelp sum
+    apps: singularity run --app sum -B $PWD/appdata:/opt/appdata apps_v1.0.sif 
+
+##############################
+# square
+##############################
+
+%apprun square
+    cd  /opt/appsquare/
+    exec ./square "${@}"
+
+%apphelp square
+    apps: singularity run --app square -B $PWD/appdata:/opt/appdata apps_v1.0.sif 

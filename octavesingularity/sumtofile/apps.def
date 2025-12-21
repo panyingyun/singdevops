@@ -1,0 +1,36 @@
+# apps.def
+BootStrap: docker
+From: harbor.yuansuan.cn/gnuoctave/ysoctave:7.2.0
+
+%labels
+    Author  gdy
+    Version sumqv0.1
+
+%files
+    ./appsum/main.m     	 /opt/appsum/
+    ./appsum/gdysum.m   	 /opt/appsum/
+	./appsquare/main.m     	 /opt/appsquare/
+	./appsquare/gdysquare.m  /opt/appsquare/
+	./appdata/matrix.csv     /opt/appdata/
+
+##############################
+# sum
+##############################
+
+%apprun sum
+    cd  /opt/appsum/
+    exec octave-cli /opt/appsum/main.m "${@}"
+
+%apphelp sum
+    apps: singularity run --app sum -B $PWD/appdata:/opt/appdata apps_v0.1.sif 
+
+##############################
+# square
+##############################
+
+%apprun square
+    cd  /opt/appsquare/
+    exec octave-cli /opt/appsquare/main.m "${@}"
+
+%apphelp square
+    apps: singularity run --app square -B $PWD/appdata:/opt/appdata apps_v0.1.sif 
