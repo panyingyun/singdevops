@@ -3,7 +3,7 @@ BootStrap: docker
 From: harbor.michaelapp.com/library/ubuntu:22.04
 
 %labels
-    Author  yskj
+    Author  panyingyun
     Version cpi_v0.2
 
 %environment

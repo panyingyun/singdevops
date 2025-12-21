@@ -3,7 +3,7 @@ BootStrap: docker
 From: harbor.michaelapp.com/library/ubuntu:22.04
 
 %labels
-    Author  yskj
+    Author  panyingyun
     Version hello_v0.1
 
 %environment
